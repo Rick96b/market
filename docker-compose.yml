@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: organic_market_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: market_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d market_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: organic_market_backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CLIENT_URL: http://localhost:4173
+      JWT_SECRET: student_project_secret
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: market_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      ADMIN_NAME: Администратор
+      ADMIN_EMAIL: admin@organic.local
+      ADMIN_PASSWORD: admin123
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      SMTP_SECURE: "false"
+      SMTP_USER: olegkorobeinikov21@gmail.com
+      SMTP_PASS: bbtfxquxspaaailj
+      SMTP_TO: olegkorobeinikov21@gmail.com
+      SMTP_FROM_NAME: Органик Маркет
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    container_name: organic_market_frontend
+    restart: unless-stopped
+    ports:
+      - "4173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
