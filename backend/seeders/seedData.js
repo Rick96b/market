@@ -1,6 +1,6 @@
-const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
-const { Category, Product, User } = require('../models');
+const { Category, Product } = require('../models');
+const seedAdminUser = require('./seedAdminUser');
 
 const categories = [
   { name: 'Фрукты', legacyName: 'Fruits' },
@@ -103,26 +103,7 @@ const products = [
 ];
 
 async function seedData() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@organic.local';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  const adminName = process.env.ADMIN_NAME || 'Администратор';
-  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
-  const admin = await User.findOne({ where: { email: adminEmail } });
-
-  if (!admin) {
-    await User.create({
-      name: adminName,
-      email: adminEmail,
-      password_hash: adminPasswordHash,
-      role: 'admin',
-    });
-  } else {
-    await admin.update({
-      name: adminName,
-      password_hash: adminPasswordHash,
-      role: 'admin',
-    });
-  }
+  await seedAdminUser();
 
   const categoryMap = {};
 
