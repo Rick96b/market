@@ -12,26 +12,7 @@ const seedData = require('./seeders/seedData');
 dotenv.config();
 
 const app = express();
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:4173',
-  'http://127.0.0.1:4173',
-].filter(Boolean);
-
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-  })
-);
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -46,6 +27,14 @@ app.use('/api/contact', contactRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
+});
+
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Некорректный JSON в теле запроса' });
+  }
+
+  return res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
 const port = process.env.PORT || 3000;
