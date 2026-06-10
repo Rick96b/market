@@ -1,6 +1,15 @@
 const { sequelize, Order, OrderItem, Product } = require('../models');
+const { logError } = require('../utils/logger');
 
 const ORDER_STATUSES = ['new', 'confirmed', 'packing', 'shipped', 'delivered', 'cancelled'];
+
+async function rollbackTransaction(transaction, scope) {
+  try {
+    await transaction.rollback();
+  } catch (error) {
+    logError(`${scope}.rollback`, error);
+  }
+}
 
 async function createOrder(req, res) {
   let transaction;
@@ -34,7 +43,7 @@ async function createOrder(req, res) {
     });
 
     if (products.length !== productIds.length) {
-      await transaction.rollback();
+      await rollbackTransaction(transaction, 'createOrder');
       return res.status(400).json({ error: 'Один или несколько товаров не найдены' });
     }
 
@@ -89,9 +98,10 @@ async function createOrder(req, res) {
     return res.status(201).json(orderWithItems);
   } catch (error) {
     if (transaction) {
-      await transaction.rollback();
+      await rollbackTransaction(transaction, 'createOrder');
     }
 
+    logError('createOrder', error);
     return res.status(400).json({ error: error.message || 'Не удалось создать заказ' });
   }
 }
@@ -106,6 +116,7 @@ async function getMyOrders(req, res) {
 
     return res.json(orders);
   } catch (error) {
+    logError('getMyOrders', error);
     return res.status(500).json({ error: 'Не удалось загрузить заказы' });
   }
 }
@@ -119,18 +130,21 @@ async function getAllOrders(req, res) {
 
     return res.json(orders);
   } catch (error) {
+    logError('getAllOrders', error);
     return res.status(500).json({ error: 'Не удалось загрузить заказы' });
   }
 }
 
 async function updateOrderStatus(req, res) {
-  const transaction = await sequelize.transaction();
+  let transaction;
 
   try {
+    transaction = await sequelize.transaction();
+
     const { status } = req.body;
 
     if (!ORDER_STATUSES.includes(status)) {
-      await transaction.rollback();
+      await rollbackTransaction(transaction, 'updateOrderStatus');
       return res.status(400).json({ error: 'Некорректный статус заказа' });
     }
 
@@ -140,7 +154,7 @@ async function updateOrderStatus(req, res) {
     });
 
     if (!order) {
-      await transaction.rollback();
+      await rollbackTransaction(transaction, 'updateOrderStatus');
       return res.status(404).json({ error: 'Заказ не найден' });
     }
 
@@ -154,7 +168,11 @@ async function updateOrderStatus(req, res) {
     await transaction.commit();
     return res.json(updatedOrder);
   } catch (error) {
-    await transaction.rollback();
+    if (transaction) {
+      await rollbackTransaction(transaction, 'updateOrderStatus');
+    }
+
+    logError('updateOrderStatus', error);
     return res.status(400).json({ error: error.message || 'Не удалось обновить статус заказа' });
   }
 }

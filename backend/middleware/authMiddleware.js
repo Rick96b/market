@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { logError } = require('../utils/logger');
 
 async function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -8,11 +9,17 @@ async function authMiddleware(req, res, next) {
     return res.status(401).json({ error: 'Требуется токен авторизации' });
   }
 
-  try {
-    const token = header.split(' ')[1];
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'development_secret');
-    const user = await User.findByPk(payload.id);
+  const token = header.split(' ')[1];
+  let payload;
 
+  try {
+    payload = jwt.verify(token, process.env.JWT_SECRET || 'development_secret');
+  } catch (error) {
+    return res.status(401).json({ error: 'Токен недействителен или истек' });
+  }
+
+  try {
+    const user = await User.findByPk(payload.id);
     if (!user) {
       return res.status(401).json({ error: 'Пользователь не найден' });
     }
@@ -20,7 +27,8 @@ async function authMiddleware(req, res, next) {
     req.user = user;
     return next();
   } catch (error) {
-    return res.status(401).json({ error: 'Токен недействителен или истек' });
+    logError('authMiddleware.userLookup', error);
+    return res.status(500).json({ error: 'Не удалось проверить пользователя' });
   }
 }
 
