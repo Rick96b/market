@@ -7,7 +7,6 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const contactRoutes = require('./routes/contactRoutes');
-const seedData = require('./seeders/seedData');
 
 dotenv.config();
 
@@ -43,7 +42,6 @@ async function start() {
   try {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
-    await seedData();
     app.listen(port, () => {
       console.log(`Server listening on http://localhost:${port}`);
     });

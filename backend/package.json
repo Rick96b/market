@@ -1,12 +1,11 @@
 {
   "name": "market-backend",
   "version": "0.1.0",
-  "description": "Backend service for market project using Express, PostgreSQL and Sequelize",
+  "description": "Проект для онлайн магазина органических продуктов",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "seed:admin": "node seeders/seedAdminUser.js"
+    "dev": "nodemon index.js"
   },
   "engines": {
     "node": ">=18"
