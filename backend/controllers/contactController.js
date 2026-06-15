@@ -1,6 +1,5 @@
 const { ContactRequest } = require('../models');
 const { sendContactEmail } = require('../services/mailService');
-const { logError } = require('../utils/logger');
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -30,7 +29,6 @@ async function createContactRequest(req, res) {
       emailSent: true,
     });
   } catch (error) {
-    logError('createContactRequest', error);
     return res.status(500).json({ error: 'Не удалось отправить заявку' });
   }
 }
@@ -40,7 +38,6 @@ async function getContactRequests(req, res) {
     const contactRequests = await ContactRequest.findAll({ order: [['createdAt', 'DESC']] });
     return res.json(contactRequests);
   } catch (error) {
-    logError('getContactRequests', error);
     return res.status(500).json({ error: 'Не удалось загрузить заявки' });
   }
 }

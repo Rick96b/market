@@ -1,7 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
-const { logError } = require('../utils/logger');
 
 function createToken(user) {
   return jwt.sign(
@@ -58,7 +57,6 @@ async function register(req, res) {
       user: cleanUser(user),
     });
   } catch (error) {
-    logError('register', error);
     return res.status(500).json({ error: 'Не удалось зарегистрировать пользователя' });
   }
 }
@@ -86,7 +84,6 @@ async function login(req, res) {
       user: cleanUser(user),
     });
   } catch (error) {
-    logError('login', error);
     return res.status(500).json({ error: 'Не удалось войти' });
   }
 }

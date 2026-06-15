@@ -1,12 +1,10 @@
 const { Category } = require('../models');
-const { logError } = require('../utils/logger');
 
 async function getCategories(req, res) {
   try {
     const categories = await Category.findAll({ order: [['name', 'ASC']] });
     return res.json(categories);
   } catch (error) {
-    logError('getCategories', error);
     return res.status(500).json({ error: 'Не удалось загрузить категории' });
   }
 }
@@ -30,7 +28,6 @@ async function createCategory(req, res) {
 
     return res.status(201).json(category);
   } catch (error) {
-    logError('createCategory', error);
     return res.status(500).json({ error: 'Не удалось создать категорию' });
   }
 }

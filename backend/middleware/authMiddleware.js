@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
-const { logError } = require('../utils/logger');
 
 async function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
@@ -27,7 +26,6 @@ async function authMiddleware(req, res, next) {
     req.user = user;
     return next();
   } catch (error) {
-    logError('authMiddleware.userLookup', error);
     return res.status(500).json({ error: 'Не удалось проверить пользователя' });
   }
 }

@@ -1,6 +1,5 @@
 const { Op } = require('sequelize');
 const { Category, Product } = require('../models');
-const { logError } = require('../utils/logger');
 
 const productFields = [
   'name',
@@ -141,7 +140,6 @@ async function getProducts(req, res) {
 
     return res.json(products);
   } catch (error) {
-    logError('getProducts', error);
     return res.status(500).json({ error: 'Не удалось загрузить товары' });
   }
 }
@@ -158,7 +156,6 @@ async function getProductById(req, res) {
 
     return res.json(product);
   } catch (error) {
-    logError('getProductById', error);
     return res.status(500).json({ error: 'Не удалось загрузить товар' });
   }
 }
@@ -182,7 +179,6 @@ async function createProduct(req, res) {
 
     return res.status(201).json(productWithCategory);
   } catch (error) {
-    logError('createProduct', error);
     return res.status(500).json({ error: 'Не удалось создать товар' });
   }
 }
@@ -215,7 +211,6 @@ async function updateProduct(req, res) {
 
     return res.json(productWithCategory);
   } catch (error) {
-    logError('updateProduct', error);
     return res.status(500).json({ error: 'Не удалось обновить товар' });
   }
 }
@@ -230,7 +225,6 @@ async function deleteProduct(req, res) {
     await product.destroy();
     return res.json({ message: 'Товар удален' });
   } catch (error) {
-    logError('deleteProduct', error);
     return res.status(500).json({ error: 'Не удалось удалить товар' });
   }
 }
