@@ -4,15 +4,15 @@ services:
     container_name: organic_market_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: market_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DB_NAME:-market_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d market_db"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -29,9 +29,9 @@ services:
       JWT_SECRET: student_project_secret
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: market_db
-      DB_USER: postgres
-      DB_PASSWORD: password
+      DB_NAME: ${DB_NAME:-market_db}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-password}
       ADMIN_NAME: Администратор
       ADMIN_EMAIL: admin@organic.local
       ADMIN_PASSWORD: admin123
